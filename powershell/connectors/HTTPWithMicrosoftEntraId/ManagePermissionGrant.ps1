@@ -187,7 +187,7 @@ Write-Host "HttpWithAADApp Service principal was found:"
 $HttpWithAADAppServicePrincipal | Format-Table -wrap -auto
 
 # Select 1st party app for scope selection
-if($Host.UI.PromptForChoice("Resource and scope selection", "Most customers access to widely used resources (e.g. Graph, Sharepoint, Dataverse, etc.). Do you want to display only the commonly used apps?", ('&Commonly used Apps', '&All apps (advanced)'), 0) -eq 0)
+if($Host.UI.PromptForChoice("xxxResource and scope selection", "Most customers access to widely used resources (e.g. Graph, Sharepoint, Dataverse, etc.). Do you want to display only the commonly used apps?", ('&Commonly used Apps', '&All apps (advanced)'), 0) -eq 0)
 {
 	$filteredFirstPartyAppList = Get-FirstPartyAppList | Where-Object {$_.IsCommonlyUsedApp -eq $true}
 }
@@ -267,15 +267,15 @@ if($existingOauth2PermissionGrant)
 	$existingOauth2PermissionGrant | Format-Table -wrap -auto
 
 	# allow deletion of existing grants
-	if($Host.UI.PromptForChoice("Grant deletion", "Do you want to delete any of the existing grants?", ('&No', '&Yes, I want to first delete existing grants'), 0) -eq 1)
-	{
+###	if($Host.UI.PromptForChoice("Grant deletion", "Do you want to delete any of the existing grants?", ('&No', '&Yes, I want to first delete existing grants'), 0) -eq 1)
+###	{
 		# deletion flow
-		$selectedGrantsToDelete = $existingOauth2PermissionGrant | Out-GridView -Title "Select the grants you want to delete" -OutputMode Multiple
+###		$selectedGrantsToDelete = $existingOauth2PermissionGrant | Out-GridView -Title "Select the grants you want to delete" -OutputMode Multiple
 
-		Write-Host "The following grants are going to be deleted:"
-		$selectedGrantsToDelete | Format-Table -wrap -auto
-		$selectedGrantsToDelete | ForEach-Object { Remove-MgOauth2PermissionGrant -OAuth2PermissionGrantId $_.Id }
-	}
+###		Write-Host "The following grants are going to be deleted:"
+###		$selectedGrantsToDelete | Format-Table -wrap -auto
+###		$selectedGrantsToDelete | ForEach-Object { Remove-MgOauth2PermissionGrant -OAuth2PermissionGrantId $_.Id }
+###	}
 }
 else
 {
@@ -293,6 +293,8 @@ if ($grantParams.consentType -eq "AllPrincipals")
 	if($existingOauth2PermissionGrant)
 	{
 		Write-Warning "An existing oAuth2PermissionGrant object was found with the same key properties. (clientId: $HttpWithAADAppServicePrincipalId, resourceId: $selectedSPId, consentType: AllPrincipals)"
+		#CWE 20241212
+		$grantParams.scope = $joinedScopes + " " + $existingOauth2PermissionGrant.scope
 	}
 }
 elseif ($grantParams.consentType -eq "Principal")
@@ -303,6 +305,8 @@ elseif ($grantParams.consentType -eq "Principal")
 	if($existingOauth2PermissionGrant)
 	{
 		Write-Warning "An existing oAuth2PermissionGrant object was found with the same key properties. (clientId: $HttpWithAADAppServicePrincipalId, resourceId: $selectedSPId, consentType: Principal, principalId: $grantParamsPrincipalId)"
+			#CWE 20241212
+			$grantParams.scope = $joinedScopes + " " + $existingOauth2PermissionGrant.scope
 	}
 }
 
